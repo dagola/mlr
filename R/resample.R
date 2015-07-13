@@ -68,7 +68,7 @@ resample = function(learner, task, resampling, measures, weights = NULL, models 
   assertClass(resampling, classes = "ResampleInstance")
   measures = checkMeasures(measures, task)
   if (!is.null(weights)) {
-    assertNumeric(weights, len = task$task.desc$size, any.missing = FALSE, lower = 0)
+    assertNumeric(weights, len = task$task.desc$size, any.missing = FALSE)
   }
   assertFlag(models)
   if (missing(extract))
