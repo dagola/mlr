@@ -113,7 +113,7 @@ doResampleIteration = function(learner, task, rin, i, measures, weights, model, 
 
   err.msgs = c(NA_character_, NA_character_)
   messagef("Training...")
-  m = train(learner, task, subset = train.i, weights = weights[train.i])
+  m = train(learner, task, subset = train.i, weights = weights)
   messagef("Training done.")
   if (isFailureModel(m))
     err.msgs[1L] = getFailureModelMsg(m)
