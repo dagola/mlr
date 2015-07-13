@@ -49,7 +49,7 @@ train = function(learner, task, subset, weights = NULL) {
 
   # FIXME: code is bad here, set weights, the simply check it in checktasklearner
   if (!is.null(weights)) {
-    assertNumeric(weights, len = length(subset), any.missing = FALSE, lower = 0)
+    assertNumeric(weights, len = length(subset), any.missing = FALSE)
   } else {
     weights = task$weights
   }
