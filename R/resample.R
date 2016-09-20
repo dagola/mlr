@@ -113,44 +113,19 @@ resample = function(learner, task, resampling, measures, weights = NULL, models 
                                m = makeWrappedModel(learner = learner,
                                                      learner.model = x,
                                                      task.desc = getTaskDescription(task),
-                                                     subset = rin$train.inds,
+                                                     subset = NULL,
                                                      features = getTaskFeatureNames(task),
                                                      factor.levels = getTaskFactorLevels(task),
                                                      time = NA_real_)
 
+                               train = rin$train.inds[[1]]
+                               test = rin$test.inds[[1]]
+
                                ms.train = rep(NA, length(measures))
                                ms.test = rep(NA, length(measures))
-                               pred.train = NULL
-                               pred.test = NULL
-                               pp = rin$desc$predict
-                               if (pp == "train") {
-                                 pred.train = predict(m, task, subset = train.i)
-                                 if (!is.na(pred.train$error)) err.msgs[2L] = pred.train$error
-                                 ms.train = vnapply(measures, function(pm) performance(task = task,
-                                                                                       model = m,
-                                                                                       pred = pred.train,
-                                                                                       measures = pm))
-                               } else if (pp == "test") {
-                                 pred.test = predict(m, task, subset = test.i)
-                                 if (!is.na(pred.test$error)) err.msgs[2L] = pred.test$error
-                                 ms.test = vnapply(measures, function(pm) performance(task = task,
-                                                                                      model = m,
-                                                                                      pred = pred.test,
-                                                                                      measures = pm))
-                               } else { # "both"
-                                 pred.train = predict(m, task, subset = train.i)
-                                 if (!is.na(pred.train$error)) err.msgs[2L] = pred.train$error
-                                 ms.train = vnapply(measures, function(pm) performance(task = task,
-                                                                                       model = m,
-                                                                                       pred = pred.train,
-                                                                                       measures = pm))
-                                 pred.test = predict(m, task, subset = test.i)
-                                 if (!is.na(pred.test$error)) err.msgs[2L] = paste(err.msgs[2L], pred.test$error)
-                                 ms.test = vnapply(measures, function(pm) performance(task = task,
-                                                                                      model = m,
-                                                                                      pred = pred.test,
-                                                                                      measures = pm))
-                               }
+                               pred.train = predict(m, train)
+                               pred.test = predict(m, test)
+
                                ex = extract(m)
                                list(
                                  measures.test = ms.test,
@@ -158,7 +133,7 @@ resample = function(learner, task, resampling, measures, weights = NULL, models 
                                  model = if (model) m else NULL,
                                  pred.test = pred.test,
                                  pred.train = pred.train,
-                                 err.msgs = err.msgs,
+                                 err.msgs = x,
                                  extract = ex
                                )
 
