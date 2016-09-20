@@ -1,5 +1,5 @@
 makeBaseWrapper = function(id, type, next.learner, package = character(0L), par.set = makeParamSet(),
-  par.vals = list(), learner.subclass, model.subclass) {
+                           par.vals = list(), learner.subclass, model.subclass) {
 
   if (inherits(next.learner, "OptWrapper"))
     stop("Cannot wrap an optimization wrapper with something else!")
@@ -8,13 +8,13 @@ makeBaseWrapper = function(id, type, next.learner, package = character(0L), par.
     stopf("Hyperparameter names in wrapper clash with base learner names: %s", collapse(ns))
 
   learner = makeLearnerBaseConstructor(classes = c(learner.subclass, "BaseWrapper"),
-    id = id,
-    type = type,
-    predict.type = next.learner$predict.type,
-    package = union(package, next.learner$package),
-    properties = NULL, # these are handled by the getter anyway
-    par.set = par.set,
-    par.vals = par.vals
+                                       id = id,
+                                       type = type,
+                                       predict.type = next.learner$predict.type,
+                                       package = union(package, next.learner$package),
+                                       properties = NULL, # these are handled by the getter anyway
+                                       par.set = par.set,
+                                       par.vals = par.vals
   )
   learner$fix.factors.prediction = FALSE
   learner$next.learner = next.learner
@@ -66,12 +66,16 @@ makeWrappedModel.BaseWrapper = function(learner, learner.model, task.desc, subse
 
 #' @export
 isFailureModel.BaseWrapperModel = function(model) {
-  return(!inherits(model$learner.model, "NoFeaturesModel") && isFailureModel(model$learner.model$next.model))
+  return(!inherits(model$learner.model, "NoFeaturesModel") && (NextMethod() || isFailureModel(model$learner.model$next.model)))
 }
 
 #' @export
 getFailureModelMsg.BaseWrapperModel = function(model) {
-  return(getFailureModelMsg(model$learner.model$next.model))
+  if(isFailureModel(model)) {
+    NextMethod()
+  } else {
+    return(getFailureModelMsg(model$learner.model$next.model))
+  }
 }
 
 #' @export
