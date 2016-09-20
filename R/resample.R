@@ -67,7 +67,7 @@
 #'   measures = list(mmce, setAggregation(mmce, train.mean)))
 #' print(r$aggr)
 resample = function(learner, task, resampling, measures, weights = NULL, models = FALSE,
-  extract, keep.pred = TRUE, ..., show.info = getMlrOption("show.info")) {
+                    extract, keep.pred = TRUE, ..., show.info = getMlrOption("show.info")) {
 
   learner = checkLearner(learner, ...)
   assertClass(task, classes = "Task")
@@ -96,7 +96,7 @@ resample = function(learner, task, resampling, measures, weights = NULL, models 
 
   rin = resampling
   more.args = list(learner = learner, task = task, rin = rin, weights = NULL,
-    measures = measures, model = models, extract = extract, show.info = show.info)
+                   measures = measures, model = models, extract = extract, show.info = show.info)
   if (!is.null(weights)) {
     more.args$weights = weights
   } else if (!is.null(getTaskWeights(task))) {
@@ -105,7 +105,64 @@ resample = function(learner, task, resampling, measures, weights = NULL, models 
   parallelLibrary("mlr", master = FALSE, level = "mlr.resample", show.info = FALSE)
   exportMlrOptions(level = "mlr.resample")
   time1 = Sys.time()
-  iter.results = parallelMap(doResampleIteration, seq_len(rin$desc$iters), level = "mlr.resample", more.args = more.args)
+  iter.results = parallelMap(doResampleIteration, seq_len(rin$desc$iters),
+                             level = "mlr.resample",
+                             more.args = more.args,
+                             impute.error = function(x) {
+                               # make failure model
+                               m = makeWrappedModel(learner = learner,
+                                                     learner.model = x,
+                                                     task.desc = getTaskDescription(task),
+                                                     subset = rin$train.inds,
+                                                     features = getTaskFeatureNames(task),
+                                                     factor.levels = getTaskFactorLevels(task),
+                                                     time = NA_real_)
+
+                               ms.train = rep(NA, length(measures))
+                               ms.test = rep(NA, length(measures))
+                               pred.train = NULL
+                               pred.test = NULL
+                               pp = rin$desc$predict
+                               if (pp == "train") {
+                                 pred.train = predict(m, task, subset = train.i)
+                                 if (!is.na(pred.train$error)) err.msgs[2L] = pred.train$error
+                                 ms.train = vnapply(measures, function(pm) performance(task = task,
+                                                                                       model = m,
+                                                                                       pred = pred.train,
+                                                                                       measures = pm))
+                               } else if (pp == "test") {
+                                 pred.test = predict(m, task, subset = test.i)
+                                 if (!is.na(pred.test$error)) err.msgs[2L] = pred.test$error
+                                 ms.test = vnapply(measures, function(pm) performance(task = task,
+                                                                                      model = m,
+                                                                                      pred = pred.test,
+                                                                                      measures = pm))
+                               } else { # "both"
+                                 pred.train = predict(m, task, subset = train.i)
+                                 if (!is.na(pred.train$error)) err.msgs[2L] = pred.train$error
+                                 ms.train = vnapply(measures, function(pm) performance(task = task,
+                                                                                       model = m,
+                                                                                       pred = pred.train,
+                                                                                       measures = pm))
+                                 pred.test = predict(m, task, subset = test.i)
+                                 if (!is.na(pred.test$error)) err.msgs[2L] = paste(err.msgs[2L], pred.test$error)
+                                 ms.test = vnapply(measures, function(pm) performance(task = task,
+                                                                                      model = m,
+                                                                                      pred = pred.test,
+                                                                                      measures = pm))
+                               }
+                               ex = extract(m)
+                               list(
+                                 measures.test = ms.test,
+                                 measures.train = ms.train,
+                                 model = if (model) m else NULL,
+                                 pred.test = pred.test,
+                                 pred.train = pred.train,
+                                 err.msgs = err.msgs,
+                                 extract = ex
+                               )
+
+                             })
   time2 = Sys.time()
   runtime = as.numeric(difftime(time2, time1, "sec"))
   addClasses(
