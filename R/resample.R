@@ -123,17 +123,23 @@ resample = function(learner, task, resampling, measures, weights = NULL, models 
 
                                ms.train = rep(NA, length(measures))
                                ms.test = rep(NA, length(measures))
-                               pred.train = predict(m, train)
-                               pred.test = predict(m, test)
+                               pred.train = predict(m, task, subset = train)
+                               pred.test = predict(m, task, subset = test)
 
-                               ex = extract(m)
+                               err.msgs = character(2L)
+                               err.msgs[1L] = getFailureModelMsg(m)
+
+                               if (!is.na(pred.train$error)) err.msgs[2L] = pred.train$error
+                               if (!is.na(pred.test$error)) err.msgs[2L] = paste(err.msgs[2L], pred.test$error)
+
+                               ex = NA
                                list(
                                  measures.test = ms.test,
                                  measures.train = ms.train,
-                                 model = if (model) m else NULL,
+                                 model = if (models) m else NULL,
                                  pred.test = pred.test,
                                  pred.train = pred.train,
-                                 err.msgs = x,
+                                 err.msgs = err.msgs,
                                  extract = ex
                                )
 
