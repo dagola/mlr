@@ -107,43 +107,7 @@ resample = function(learner, task, resampling, measures, weights = NULL, models 
   time1 = Sys.time()
   iter.results = parallelMap(doResampleIteration, seq_len(rin$desc$iters),
                              level = "mlr.resample",
-                             more.args = more.args,
-                             impute.error = function(x) {
-                               # make failure model
-                               m = makeWrappedModel(learner = learner,
-                                                     learner.model = x,
-                                                     task.desc = getTaskDescription(task),
-                                                     subset = NULL,
-                                                     features = getTaskFeatureNames(task),
-                                                     factor.levels = getTaskFactorLevels(task),
-                                                     time = NA_real_)
-
-                               train = rin$train.inds[[1]]
-                               test = rin$test.inds[[1]]
-
-                               ms.train = rep(NA, length(measures))
-                               ms.test = rep(NA, length(measures))
-                               pred.train = predict(m, task, subset = train)
-                               pred.test = predict(m, task, subset = test)
-
-                               err.msgs = character(2L)
-                               err.msgs[1L] = getFailureModelMsg(m)
-
-                               if (!is.na(pred.train$error)) err.msgs[2L] = pred.train$error
-                               if (!is.na(pred.test$error)) err.msgs[2L] = paste(err.msgs[2L], pred.test$error)
-
-                               ex = NA
-                               list(
-                                 measures.test = ms.test,
-                                 measures.train = ms.train,
-                                 model = if (models) m else NULL,
-                                 pred.test = pred.test,
-                                 pred.train = pred.train,
-                                 err.msgs = err.msgs,
-                                 extract = ex
-                               )
-
-                             })
+                             more.args = more.args)
   time2 = Sys.time()
   runtime = as.numeric(difftime(time2, time1, "sec"))
   addClasses(

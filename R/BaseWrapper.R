@@ -66,16 +66,12 @@ makeWrappedModel.BaseWrapper = function(learner, learner.model, task.desc, subse
 
 #' @export
 isFailureModel.BaseWrapperModel = function(model) {
-  return(!inherits(model$learner.model, "NoFeaturesModel") && (NextMethod() || isFailureModel(model$learner.model$next.model)))
+  return(!inherits(model$learner.model, "NoFeaturesModel") && isFailureModel(model$learner.model$next.model))
 }
 
 #' @export
 getFailureModelMsg.BaseWrapperModel = function(model) {
-  if(isFailureModel(model)) {
-    NextMethod()
-  } else {
-    return(getFailureModelMsg(model$learner.model$next.model))
-  }
+  return(getFailureModelMsg(model$learner.model$next.model))
 }
 
 #' @export
