@@ -94,14 +94,23 @@ evalOptimizationStates = function(learner, task, resampling, measures, par.set, 
   res.list = parallelMap(evalOptimizationState, dobs, states, level = level,
     more.args = list(learner = learner, task = task, resampling = resampling,
       measures = measures, par.set = par.set, bits.to.features = bits.to.features,
-      control = control, opt.path = opt.path, show.info = show.info, remove.nas = remove.nas))
+      control = control, opt.path = opt.path, show.info = show.info, remove.nas = remove.nas),
+    impute.error = function(x) {
+      y = setNames(rep(NA_real_, length(measures)), vcapply(measures, measureAggrName))
+      errmsg = as.character(x)
+      exec.time = NA_real_
+      threshold = NULL
+      if (control$tune.threshold)
+        threshold = NA_real_
+      list(y = y, exec.time = exec.time, errmsg = errmsg, threshold = threshold)
+    })
   # add stuff to opt.path
   for (i in seq_len(n)) {
     res = res.list[[i]]
     if (control$tune.threshold) {
       # add class names to threshold, if longer than 1
       extra = as.list(res$threshold)
-      names(extra) = stri_paste("threshold", ifelse(length(extra) > 1L, ".", ""), 
+      names(extra) = stri_paste("threshold", ifelse(length(extra) > 1L, ".", ""),
                                 names(extra), ignore_null = TRUE)
     } else {
       extra = NULL

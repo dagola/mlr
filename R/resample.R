@@ -67,7 +67,7 @@
 #'   measures = list(mmce, setAggregation(mmce, train.mean)))
 #' print(r$aggr)
 resample = function(learner, task, resampling, measures, weights = NULL, models = FALSE,
-  extract, keep.pred = TRUE, ..., show.info = getMlrOption("show.info")) {
+                    extract, keep.pred = TRUE, ..., show.info = getMlrOption("show.info")) {
 
   learner = checkLearner(learner, ...)
   assertClass(task, classes = "Task")
@@ -96,7 +96,7 @@ resample = function(learner, task, resampling, measures, weights = NULL, models 
 
   rin = resampling
   more.args = list(learner = learner, task = task, rin = rin, weights = NULL,
-    measures = measures, model = models, extract = extract, show.info = show.info)
+                   measures = measures, model = models, extract = extract, show.info = show.info)
   if (!is.null(weights)) {
     more.args$weights = weights
   } else if (!is.null(getTaskWeights(task))) {
@@ -105,7 +105,9 @@ resample = function(learner, task, resampling, measures, weights = NULL, models 
   parallelLibrary("mlr", master = FALSE, level = "mlr.resample", show.info = FALSE)
   exportMlrOptions(level = "mlr.resample")
   time1 = Sys.time()
-  iter.results = parallelMap(doResampleIteration, seq_len(rin$desc$iters), level = "mlr.resample", more.args = more.args)
+  iter.results = parallelMap(doResampleIteration, seq_len(rin$desc$iters),
+                             level = "mlr.resample",
+                             more.args = more.args)
   time2 = Sys.time()
   runtime = as.numeric(difftime(time2, time1, "sec"))
   addClasses(
