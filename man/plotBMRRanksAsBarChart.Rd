@@ -56,7 +56,7 @@ the x-axis. Areas are always colored according to the \code{learner.id}.
 }
 \seealso{
 Other benchmark: \code{\link{BenchmarkResult}},
-  \code{\link{benchmark}},
+  \code{\link{batchmark}}, \code{\link{benchmark}},
   \code{\link{convertBMRToRankMatrix}},
   \code{\link{friedmanPostHocTestBMR}},
   \code{\link{friedmanTestBMR}},
@@ -76,7 +76,8 @@ Other benchmark: \code{\link{BenchmarkResult}},
   \code{\link{getBMRTuneResults}},
   \code{\link{plotBMRBoxplots}},
   \code{\link{plotBMRSummary}},
-  \code{\link{plotCritDifferences}}
+  \code{\link{plotCritDifferences}},
+  \code{\link{reduceBatchmarkResults}}
 
 Other plot: \code{\link{plotBMRBoxplots}},
   \code{\link{plotBMRSummary}},

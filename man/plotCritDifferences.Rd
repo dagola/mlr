@@ -39,7 +39,7 @@ JMLR, 2006
 }
 \seealso{
 Other benchmark: \code{\link{BenchmarkResult}},
-  \code{\link{benchmark}},
+  \code{\link{batchmark}}, \code{\link{benchmark}},
   \code{\link{convertBMRToRankMatrix}},
   \code{\link{friedmanPostHocTestBMR}},
   \code{\link{friedmanTestBMR}},
@@ -59,7 +59,8 @@ Other benchmark: \code{\link{BenchmarkResult}},
   \code{\link{getBMRTuneResults}},
   \code{\link{plotBMRBoxplots}},
   \code{\link{plotBMRRanksAsBarChart}},
-  \code{\link{plotBMRSummary}}
+  \code{\link{plotBMRSummary}},
+  \code{\link{reduceBatchmarkResults}}
 
 Other plot: \code{\link{plotBMRBoxplots}},
   \code{\link{plotBMRRanksAsBarChart}},
