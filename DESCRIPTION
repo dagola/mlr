@@ -52,6 +52,7 @@ Suggests:
     ada,
     adabag,
     bartMachine,
+    batchtools,
     brnn,
     bst,
     C50,
@@ -110,6 +111,7 @@ Suggests:
     nodeHarvest (>= 0.7-3),
     neuralnet,
     numDeriv,
+    OpenML,
     pamr,
     party,
     penalized (>= 0.9-47),
@@ -147,6 +149,9 @@ Suggests:
     TH.data,
     xgboost (>= 0.6-2),
     XML
+Remotes:
+    github::mllg/batchtools
+    github::openml/openml-r
 LazyData: yes
 ByteCompile: yes
 Version: 2.10
