@@ -27,7 +27,7 @@ makeRLearner.regr.ranger = function() {
       makeLogicalLearnerParam(id = "keep.inbag", default = FALSE, tunable = FALSE)
     ),
     par.vals = list(num.threads = 1L, verbose = FALSE, respect.unordered.factors = TRUE),
-    properties = c("numerics", "factors", "ordered", "featimp"),
+    properties = c("numerics", "factors", "ordered", "featimp", "se"),
     name = "Random Forests",
     short.name = "ranger",
     note = "By default, internal parallelization is switched off (`num.threads = 1`), `verbose` output is disabled, `respect.unordered.factors` is set to `TRUE`. All settings are changeable."
@@ -35,15 +35,22 @@ makeRLearner.regr.ranger = function() {
 }
 
 #' @export
-trainLearner.regr.ranger = function(.learner, .task, .subset, .weights, ...) {
+trainLearner.regr.ranger = function(.learner, .task, .subset, .weights, keep.inbag = NULL, ...) {
   tn = getTaskTargetNames(.task)
-  ranger::ranger(formula = NULL, dependent.variable = tn, data = getTaskData(.task, .subset), ...)
+  keep.inbag = if (is.null(keep.inbag)) FALSE else keep.inbag
+  keep.inbag = if (.learner$predict.type == "se") TRUE else keep.inbag
+  ranger::ranger(formula = NULL, dependent.variable = tn, data = getTaskData(.task, .subset), keep.inbag = keep.inbag, ...)
 }
 
 #' @export
 predictLearner.regr.ranger = function(.learner, .model, .newdata, ...) {
-  p = predict(object = .model$learner.model, data = .newdata, ...)
-  return(p$predictions)
+  type = if (.learner$predict.type == "se") "se" else "response"
+  p = predict(object = .model$learner.model, data = .newdata, type = type, ...)
+  if (.learner$predict.type == "se") {
+    return(cbind(p$predictions, p$se))
+  } else {
+    return(p$predictions)
+  }
 }
 
 #' @export
