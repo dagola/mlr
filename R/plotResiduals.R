@@ -2,12 +2,13 @@
 #'
 #' @description
 #' Plots for model diagnostics. Provides scatterplots of true vs. predicted values
-#' and histograms of the model's residuals. 
+#' and histograms of the model's residuals.
 #'
 #' @param obj [\code{\link{Prediction}} | \code{\link{BenchmarkResult}}]\cr
 #'   Input data.
 #' @param type Type of plot. Can be \dQuote{scatterplot}, the default. Or
-#'   \dQuote{hist}, for a histogram of the residuals.
+#'   \dQuote{hist}, for a histogram, or in case of classification problems
+#'   a barplot, displaying the residuals.
 #' @param loess.smooth [\code{logical(1)}]\cr
 #'   Should a loess smoother be added to the plot? Defaults to \code{TRUE}.
 #'   Only applicable for regression tasks and if \code{type} is set to \code{scatterplot}.
@@ -24,7 +25,7 @@
 #' @export
 plotResiduals = function(obj, type = "scatterplot", loess.smooth = TRUE,
   rug = TRUE, pretty.names = TRUE) {
-  
+
   assertChoice(type, c("scatterplot", "hist"))
   assertLogical(loess.smooth, len = 1L)
   assertLogical(rug, len = 1L)
@@ -52,17 +53,19 @@ plotResiduals.BenchmarkResult = function(obj, type = "scatterplot", loess.smooth
   rug = TRUE, pretty.names = TRUE) {
 
   task.type = getBMRObjects(obj, as.df = TRUE, fun = function(X){
-    getRRTaskDescription(X)$type
+    getRRTaskDesc(X)$type
   })
   task.type = unique(task.type$p)
-  
+
   if (task.type %nin% c("regr", "classif"))
     stopf("Task type must be 'regr' or 'classif'. But has type '%s'.", task.type)
 
   df = getBMRPredictions(obj, as.df = TRUE)
 
   if (pretty.names) {
-    levels(df$learner.id) = getBMRLearnerShortNames(obj)
+    learner.short.names = getBMRLearnerShortNames(obj)
+    checkDuplicatedLearnerNames(learner.short.names)
+    levels(df$learner.id) = learner.short.names
   }
 
   p = makeResidualPlot(df, type, loess.smooth, rug, task.type)
@@ -90,7 +93,12 @@ makeResidualPlot = function(df, type = "scatterplot", loess.smooth = TRUE,
     p = p + ggtitle("True value vs. fitted value")
   } else {
     df$residuals = as.numeric(df$truth) - as.numeric(df$response)
-    p = ggplot(df, aes_string("residuals")) + geom_histogram()
+    p = ggplot(df, aes_string("residuals"))
+    if (task.type == "classif") {
+      p = p + geom_bar()
+    } else {
+      p = p + geom_histogram()
+    }
     p = p + ggtitle("Histogram of residuals")
   }
 

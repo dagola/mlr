@@ -27,10 +27,11 @@ makeRLearner.regr.ranger = function() {
       makeLogicalLearnerParam(id = "keep.inbag", default = FALSE, tunable = FALSE)
     ),
     par.vals = list(num.threads = 1L, verbose = FALSE, respect.unordered.factors = TRUE),
-    properties = c("numerics", "factors", "ordered", "featimp", "se"),
+    properties = c("numerics", "factors", "ordered", "oobpreds", "featimp", "se"),
     name = "Random Forests",
     short.name = "ranger",
-    note = "By default, internal parallelization is switched off (`num.threads = 1`), `verbose` output is disabled, `respect.unordered.factors` is set to `TRUE`. All settings are changeable."
+    note = "By default, internal parallelization is switched off (`num.threads = 1`), `verbose` output is disabled, `respect.unordered.factors` is set to `TRUE`. All settings are changeable.",
+    callees = "ranger"
   )
 }
 
@@ -51,6 +52,11 @@ predictLearner.regr.ranger = function(.learner, .model, .newdata, ...) {
   } else {
     return(p$predictions)
   }
+}
+
+#' @export
+getOOBPredsLearner.regr.ranger = function(.learner, .model) {
+  .model$learner.model$predictions
 }
 
 #' @export
