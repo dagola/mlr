@@ -33,7 +33,7 @@ Other benchmark: \code{\link{BenchmarkResult}},
   \code{\link{getBMRMeasures}}, \code{\link{getBMRModels}},
   \code{\link{getBMRPerformances}},
   \code{\link{getBMRPredictions}},
-  \code{\link{getBMRTaskDescriptions}},
+  \code{\link{getBMRTaskDescs}},
   \code{\link{getBMRTuneResults}},
   \code{\link{plotBMRBoxplots}},
   \code{\link{plotBMRRanksAsBarChart}},
@@ -41,4 +41,3 @@ Other benchmark: \code{\link{BenchmarkResult}},
   \code{\link{plotCritDifferences}},
   \code{\link{reduceBatchmarkResults}}
 }
-

@@ -45,7 +45,8 @@
 #' res = tuneParams("classif.ksvm", task = pid.task, resampling = rdesc,
 #' par.set = ps, control = ctrl)
 #' data = generateHyperParsEffectData(res)
-#' plotHyperParsEffect(data, x = "C", y = "mmce.test.mean")
+#' plt = plotHyperParsEffect(data, x = "C", y = "mmce.test.mean")
+#' plt + ylab("Misclassification Error")
 #'
 #' # nested cross validation
 #' ps = makeParamSet(makeDiscreteParam("C", values = 2^(-4:4)))
@@ -73,10 +74,10 @@ generateHyperParsEffectData = function(tune.result, include.diagnostics = FALSE,
   # in case we have nested CV
   if (getClass1(tune.result) == "ResampleResult"){
     d = getNestedTuneResultsOptPathDf(tune.result, trafo = trafo)
-    num_hypers = length(tune.result$extract[[1]]$x)
-    if ((num_hypers > 2) && !partial.dep)
+    num.hypers = length(tune.result$extract[[1]]$x)
+    if ((num.hypers > 2) && !partial.dep)
       stopf("Partial dependence must be requested with partial.dep when tuning more than 2 hyperparameters")
-    for (hyp in 1:num_hypers) {
+    for (hyp in 1:num.hypers) {
       if (!is.numeric(d[, hyp]))
         d[, hyp] = type.convert(as.character(d[, hyp]))
     }
@@ -95,10 +96,10 @@ generateHyperParsEffectData = function(tune.result, include.diagnostics = FALSE,
       d = as.data.frame(tune.result$opt.path)
     }
     # what if we have numerics that were discretized upstream
-    num_hypers = length(tune.result$x)
-    if ((num_hypers > 2) && !partial.dep)
+    num.hypers = length(tune.result$x)
+    if ((num.hypers > 2) && !partial.dep)
       stopf("Partial dependence must be requested with partial.dep when tuning more than 2 hyperparameters")
-    for (hyp in 1:num_hypers) {
+    for (hyp in 1:num.hypers) {
       if (!is.numeric(d[, hyp]))
         d[, hyp] = type.convert(as.character(d[, hyp]))
     }
@@ -173,7 +174,6 @@ print.HyperParsEffectData = function(x, ...) {
 #'  using nested cross validation, set this to \dQuote{nested_cv_run} to obtain a facet
 #'  for each outer loop. Must be a column from \code{HyperParsEffectData$data}
 #'  Default is \code{NULL}.
-#' @template arg_prettynames
 #' @param global.only [\code{logical(1)}]\cr
 #'  If \code{TRUE}, will only plot the current global optima when setting
 #'  x = "iteration" and y as a performance measure from
@@ -225,15 +225,17 @@ print.HyperParsEffectData = function(x, ...) {
 #' is set to \code{TRUE} in \code{\link{generateHyperParsEffectData}}, only
 #' partial dependence will be plotted.
 #'
+#' Since a ggplot2 plot object is returned, the user can change the axis labels
+#' and other aspects of the plot using the appropriate ggplot2 syntax.
+#'
 #' @export
 #'
 #' @examples
 #' # see generateHyperParsEffectData
 plotHyperParsEffect = function(hyperpars.effect.data, x = NULL, y = NULL,
   z = NULL, plot.type = "scatter", loess.smooth = FALSE, facet = NULL,
-  pretty.names = TRUE, global.only = TRUE, interpolate = NULL,
-  show.experiments = FALSE, show.interpolated = FALSE, nested.agg = mean,
-  partial.dep.learn = NULL) {
+  global.only = TRUE, interpolate = NULL, show.experiments = FALSE,
+  show.interpolated = FALSE, nested.agg = mean, partial.dep.learn = NULL) {
 
   assertClass(hyperpars.effect.data, classes = "HyperParsEffectData")
   assertChoice(x, choices = names(hyperpars.effect.data$data))
@@ -242,7 +244,6 @@ plotHyperParsEffect = function(hyperpars.effect.data, x = NULL, y = NULL,
   assertChoice(plot.type, choices = c("scatter", "line", "heatmap", "contour"))
   assertFlag(loess.smooth)
   assertSubset(facet, choices = names(hyperpars.effect.data$data))
-  assertFlag(pretty.names)
   assertFlag(global.only)
   assert(checkClass(interpolate, "Learner"), checkString(interpolate),
          checkNull(interpolate))
@@ -287,14 +288,14 @@ plotHyperParsEffect = function(hyperpars.effect.data, x = NULL, y = NULL,
   if (na.flag){
     d$learner_status = ifelse(is.na(d[, "exec.time"]), "Failure", "Success")
     for (col in hyperpars.effect.data$measures) {
-      col_name = stri_split_fixed(col, ".test.mean", omit_empty = TRUE)[[1]]
+      col.name = stri_split_fixed(col, ".test.mean", omit_empty = TRUE)[[1]]
       if (heatcontour.flag){
-        d[,col][is.na(d[,col])] = get(col_name)$worst
+        d[, col][is.na(d[, col])] = get(col.name)$worst
       } else {
-        if (get(col_name)$minimize){
-          d[,col][is.na(d[,col])] = max(d[,col], na.rm = TRUE)
+        if (get(col.name)$minimize){
+          d[, col][is.na(d[, col])] = max(d[, col], na.rm = TRUE)
         } else {
-          d[,col][is.na(d[,col])] = min(d[,col], na.rm = TRUE)
+          d[, col][is.na(d[, col])] = min(d[, col], na.rm = TRUE)
         }
       }
     }
@@ -306,7 +307,7 @@ plotHyperParsEffect = function(hyperpars.effect.data, x = NULL, y = NULL,
   }
 
   # we need to work differently depending on if we have partial dependence
-  if (partial.flag && !("iteration" %in% c(x,y,z))) {
+  if (partial.flag && !("iteration" %in% c(x, y, z))) {
     # collapse nested for partial dep input
     if (hyperpars.effect.data$nested) {
       averaging = d[, !(names(d) %in% c("iteration", "nested_cv_run",
@@ -327,38 +328,38 @@ plotHyperParsEffect = function(hyperpars.effect.data, x = NULL, y = NULL,
         interaction = TRUE)$data
       # need to aggregate grid
       averaging = d[, c(hyperpars.effect.data$measures[1]), drop = FALSE]
-      combined_hypers = c(hyperpars.effect.data$hyperparams, x, y, z)
-      used_hypers = combined_hypers[duplicated(combined_hypers)]
-      hyperpars = lapply(d[, used_hypers], "[")
+      combined.hypers = c(hyperpars.effect.data$hyperparams, x, y, z)
+      used.hypers = combined.hypers[duplicated(combined.hypers)]
+      hyperpars = lapply(d[, used.hypers], "[")
       d = aggregate(averaging, hyperpars, mean)
     }
   } else {
     # assign for global only
     if (global.only && x == "iteration" && y %in% hyperpars.effect.data$measures){
       for (col in hyperpars.effect.data$measures) {
-        col_name = stri_split_fixed(col, ".test.mean", omit_empty = TRUE)[[1]]
-        if (get(col_name)$minimize){
-          d[,col] = cummin(d[,col])
+        col.name = stri_split_fixed(col, ".test.mean", omit_empty = TRUE)[[1]]
+        if (get(col.name)$minimize){
+          d[, col] = cummin(d[, col])
         } else {
-          d[,col] = cummax(d[,col])
+          d[, col] = cummax(d[, col])
         }
       }
     }
 
     if ((!is.null(interpolate)) && z.flag && (heatcontour.flag)){
       # create grid
-      xo = seq(min(d[,x]), max(d[,x]), length.out = 100)
-      yo = seq(min(d[,y]), max(d[,y]), length.out = 100)
-      grid = expand.grid(xo, yo, KEEP.OUT.ATTRS = F)
+      xo = seq(min(d[, x]), max(d[, x]), length.out = 100)
+      yo = seq(min(d[, y]), max(d[, y]), length.out = 100)
+      grid = expand.grid(xo, yo, KEEP.OUT.ATTRS = FALSE)
       names(grid) = c(x, y)
 
       if (hyperpars.effect.data$nested){
-        d_new = d
-        new_d = data.frame()
+        d.new = d
+        new.d = data.frame()
         # for loop for each nested cv run
         for (run in unique(d$nested_cv_run)){
-          d_run = d_new[d_new$nested_cv_run == run, ]
-          regr.task = makeRegrTask(id = "interp", data = d_run[,c(x,y,z)],
+          d.run = d.new[d.new$nested_cv_run == run, ]
+          regr.task = makeRegrTask(id = "interp", data = d.run[, c(x, y, z)],
             target = z)
           mod = train(lrn, regr.task)
           prediction = predict(mod, newdata = grid)
@@ -366,25 +367,25 @@ plotHyperParsEffect = function(hyperpars.effect.data, x = NULL, y = NULL,
           grid$learner_status = "Interpolated Point"
           grid$iteration = NA
           # combine the experiment data with interpolated data
-          combined = rbind(d_run[,c(x,y,z,"learner_status", "iteration")], grid)
+          combined = rbind(d.run[, c(x, y, z, "learner_status", "iteration")], grid)
           # combine each loop
-          new_d = rbind(new_d, combined)
+          new.d = rbind(new.d, combined)
         }
-        grid = new_d
+        grid = new.d
       } else {
-        regr.task = makeRegrTask(id = "interp", data = d[,c(x,y,z)], target = z)
+        regr.task = makeRegrTask(id = "interp", data = d[, c(x, y, z)], target = z)
         mod = train(lrn, regr.task)
         prediction = predict(mod, newdata = grid)
         grid[, z] = prediction$data[, prediction$predict.type]
         grid$learner_status = "Interpolated Point"
         grid$iteration = NA
         # combine the experiment data with interpolated data
-        combined = rbind(d[,c(x,y,z,"learner_status", "iteration")], grid)
+        combined = rbind(d[, c(x, y, z, "learner_status", "iteration")], grid)
         grid = combined
       }
       # remove any values that would extrapolate the z
-      grid[grid[,z] < min(d[,z]), z] = min(d[,z])
-      grid[grid[,z] > max(d[,z]), z] = max(d[,z])
+      grid[grid[, z] < min(d[, z]), z] = min(d[, z])
+      grid[grid[, z] > max(d[, z]), z] = max(d[, z])
       d = grid
     }
 
@@ -401,7 +402,7 @@ plotHyperParsEffect = function(hyperpars.effect.data, x = NULL, y = NULL,
         hyperpars = lapply(d[, hyperpars.effect.data$hyperparams], "[")
       }
       d = aggregate(averaging, hyperpars, nested.agg)
-      d$iteration = 1:nrow(d)
+      d$iteration = seq_len(nrow(d))
     }
   }
 
@@ -467,21 +468,6 @@ plotHyperParsEffect = function(hyperpars.effect.data, x = NULL, y = NULL,
       if (plot.type == "line")
         plt = plt + geom_line()
     }
-  }
-
-  # pretty name changing
-  if (pretty.names) {
-    if (x %in% hyperpars.effect.data$measures)
-      plt = plt +
-        xlab(eval(as.name(stri_split_fixed(x, ".test.mean")[[1]][1]))$name)
-    if (y %in% hyperpars.effect.data$measures)
-      plt = plt +
-        ylab(eval(as.name(stri_split_fixed(y, ".test.mean")[[1]][1]))$name)
-    if (!is.null(z))
-      if (z %in% hyperpars.effect.data$measures)
-        plt = plt +
-          labs(fill = eval(as.name(stri_split_fixed(z,
-            ".test.mean")[[1]][1]))$name)
   }
   return(plt)
 }

@@ -10,10 +10,10 @@ reduceBatchmarkResults(ids = NULL, keep.pred = TRUE,
 }
 \arguments{
 \item{ids}{[\code{data.frame} or \code{integer}]\cr
-A \code{data.frame} (or \code{\link[data.table]{data.table}})
+A \code{\link[base]{data.frame}} (or \code{\link[data.table]{data.table}})
 with a column named \dQuote{job.id}.
 Alternatively, you may also pass a vector of integerish job ids.
-If not set, defaults to all jobs.}
+If not set, defaults to all successfully terminated jobs (return value of \code{\link[batchtools]{findDone}}.}
 
 \item{keep.pred}{[\code{logical(1)}]\cr
 Keep the prediction data in the \code{pred} slot of the result object.
@@ -26,7 +26,7 @@ Default is \code{TRUE}.}
 Print verbose output on console?
 Default is set via \code{\link{configureMlr}}.}
 
-\item{reg}{[\code{\link[batchtools]{Registry}}]\cr
+\item{reg}{[\code{\link[batchtools]{ExperimentRegistry}}]\cr
 Registry, created by \code{\link[batchtools]{makeExperimentRegistry}}. If not explicitly passed,
 uses the last created registry.}
 }
@@ -34,7 +34,7 @@ uses the last created registry.}
 [\code{\link{BenchmarkResult}}].
 }
 \description{
-This creates a \code{\link{BenchmarkResult}} from a \code{\link[batchtools]{Registry}}.
+This creates a \code{\link{BenchmarkResult}} from a \code{\link[batchtools]{ExperimentRegistry}}.
 To setup the benchmark have a look at \code{\link{batchmark}}.
 }
 \seealso{
@@ -54,7 +54,7 @@ Other benchmark: \code{\link{BenchmarkResult}},
   \code{\link{getBMRMeasures}}, \code{\link{getBMRModels}},
   \code{\link{getBMRPerformances}},
   \code{\link{getBMRPredictions}},
-  \code{\link{getBMRTaskDescriptions}},
+  \code{\link{getBMRTaskDescs}},
   \code{\link{getBMRTaskIds}},
   \code{\link{getBMRTuneResults}},
   \code{\link{plotBMRBoxplots}},
@@ -62,4 +62,3 @@ Other benchmark: \code{\link{BenchmarkResult}},
   \code{\link{plotBMRSummary}},
   \code{\link{plotCritDifferences}}
 }
-
