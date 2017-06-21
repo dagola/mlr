@@ -6,7 +6,6 @@ makeRLearner.surv.ranger = function() {
     package = "ranger",
     par.set = makeParamSet(
       makeIntegerLearnerParam(id = "num.trees", lower = 1L, default = 500L),
-      # FIXME: Add default value when data dependent defaults are implemented: mtry=floor(sqrt(#independent vars))
       makeIntegerLearnerParam(id = "mtry", lower = 1L),
       makeIntegerLearnerParam(id = "min.node.size", lower = 1L, default = 3L),
       makeLogicalLearnerParam(id = "replace", default = TRUE),
@@ -36,10 +35,13 @@ makeRLearner.surv.ranger = function() {
 }
 
 #' @export
-trainLearner.surv.ranger = function(.learner, .task, .subset, .weights, ...) {
+trainLearner.surv.ranger = function(.learner, .task, .subset, .weights, mtry, ...) {
   tn = getTaskTargetNames(.task)
+  if (missing(mtry)) {
+    mtry = floor(sqrt(getTaskNFeats(.task)))
+  }
   ranger::ranger(formula = NULL, dependent.variable.name = tn[1L],
-    status.variable.name = tn[2L], data = getTaskData(.task, .subset), ...)
+                 status.variable.name = tn[2L], data = getTaskData(.task, .subset), mtry = mtry, ...)
 }
 
 #' @export
