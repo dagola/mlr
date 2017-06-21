@@ -42,7 +42,7 @@ trainLearner.surv.ranger = function(.learner, .task, .subset, .weights, mtry, mt
     if (missing(mtry.perc)) {
       mtry = floor(sqrt(getTaskNFeats(.task)))
     } else {
-      mtry = mtry.perc * getTaskNFeats(.task)
+      mtry = max(1, floor(mtry.perc * getTaskNFeats(.task)))
     }
   }
   ranger::ranger(formula = NULL, dependent.variable.name = tn[1L],

@@ -39,7 +39,7 @@ trainLearner.classif.ranger = function(.learner, .task, .subset, .weights = NULL
     if (missing(mtry.perc)) {
       mtry = floor(sqrt(getTaskNFeats(.task)))
     } else {
-      mtry = mtry.perc * getTaskNFeats(.task)
+      mtry = max(1, floor(mtry.perc * getTaskNFeats(.task)))
     }
   }
   if (missing(min.node.size)) {

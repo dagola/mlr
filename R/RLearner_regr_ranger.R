@@ -42,7 +42,7 @@ trainLearner.regr.ranger = function(.learner, .task, .subset, .weights, keep.inb
     if (missing(mtry.perc)) {
       mtry = floor(sqrt(getTaskNFeats(.task)))
     } else {
-      mtry = mtry.perc * getTaskNFeats(.task)
+      mtry = max(1, floor(mtry.perc * getTaskNFeats(.task)))
     }
   }
   keep.inbag = if (is.null(keep.inbag)) FALSE else keep.inbag
