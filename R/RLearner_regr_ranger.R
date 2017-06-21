@@ -6,7 +6,6 @@ makeRLearner.regr.ranger = function() {
     package = "ranger",
     par.set = makeParamSet(
       makeIntegerLearnerParam(id = "num.trees", lower = 1L, default = 500L),
-      # FIXME: Add default value when data dependent defaults are implemented: mtry=floor(sqrt(#independent vars))
       makeIntegerLearnerParam(id = "mtry", lower = 1L),
       makeIntegerLearnerParam(id = "min.node.size", lower = 1L, default = 5L),
       makeLogicalLearnerParam(id = "replace", default = TRUE),
@@ -36,11 +35,14 @@ makeRLearner.regr.ranger = function() {
 }
 
 #' @export
-trainLearner.regr.ranger = function(.learner, .task, .subset, .weights, keep.inbag = NULL, ...) {
+trainLearner.regr.ranger = function(.learner, .task, .subset, .weights, keep.inbag = NULL, mtry, ...) {
   tn = getTaskTargetNames(.task)
+  if (missing(mtry)) {
+      mtry = floor(sqrt(getTaskNFeats(.task)))
+  }
   keep.inbag = if (is.null(keep.inbag)) FALSE else keep.inbag
   keep.inbag = if (.learner$predict.type == "se") TRUE else keep.inbag
-  ranger::ranger(formula = NULL, dependent.variable = tn, data = getTaskData(.task, .subset), keep.inbag = keep.inbag, ...)
+  ranger::ranger(formula = NULL, dependent.variable = tn, data = getTaskData(.task, .subset), keep.inbag = keep.inbag, mtry = mtry, ...)
 }
 
 #' @export
