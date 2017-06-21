@@ -6,9 +6,7 @@ makeRLearner.classif.ranger = function() {
     package = "ranger",
     par.set = makeParamSet(
       makeIntegerLearnerParam(id = "num.trees", lower = 1L, default = 500L),
-      # FIXME: Add default value when data dependent defaults are implemented: mtry=floor(sqrt(#independent vars))
       makeIntegerLearnerParam(id = "mtry", lower = 1L),
-      # FIXME: Add default value when data dependent defaults are implemented: min.node.size = 1 for classification, 10 for probability prediction
       makeIntegerLearnerParam(id = "min.node.size", lower = 1L),
       makeLogicalLearnerParam(id = "replace", default = TRUE),
       makeNumericLearnerParam(id = "sample.fraction", lower = 0L, upper = 1L),
@@ -34,10 +32,20 @@ makeRLearner.classif.ranger = function() {
 }
 
 #' @export
-trainLearner.classif.ranger = function(.learner, .task, .subset, .weights = NULL, ...) {
+trainLearner.classif.ranger = function(.learner, .task, .subset, .weights = NULL, mtry, min.node.size, ...) {
   tn = getTaskTargetNames(.task)
+  if (missing(mtry)) {
+    mtry = floor(sqrt(getTaskNFeats(.task)))
+  }
+  if (missing(min.node.size)) {
+    if (.learner$predict.type == "prob") {
+      min.node.size = 10
+    } else {
+      min.node.size = 1
+    }
+  }
   ranger::ranger(formula = NULL, dependent.variable = tn, data = getTaskData(.task, .subset),
-    probability = (.learner$predict.type == "prob"), case.weights = .weights, ...)
+                 probability = (.learner$predict.type == "prob"), case.weights = .weights, mtry = mtry, min.node.size = min.node.size, ...)
 }
 
 #' @export
@@ -56,7 +64,7 @@ getFeatureImportanceLearner.classif.ranger = function(.learner, .model, ...) {
   has.fiv = .learner$par.vals$importance
   if (is.null(has.fiv) || has.fiv == "none") {
     stop("You must set the learners parameter value for importance to
-      'impurity' or 'permutation' to compute feature importance")
+         'impurity' or 'permutation' to compute feature importance")
   }
   mod = getLearnerModel(.model)
   ranger::importance(mod)
