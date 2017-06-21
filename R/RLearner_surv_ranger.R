@@ -7,6 +7,7 @@ makeRLearner.surv.ranger = function() {
     par.set = makeParamSet(
       makeIntegerLearnerParam(id = "num.trees", lower = 1L, default = 500L),
       makeIntegerLearnerParam(id = "mtry", lower = 1L),
+      makeNumericLearnerParam(id = "mtry.perc", lower = 0, upper = 1),
       makeIntegerLearnerParam(id = "min.node.size", lower = 1L, default = 3L),
       makeLogicalLearnerParam(id = "replace", default = TRUE),
       makeNumericLearnerParam(id = "sample.fraction", lower = 0L, upper = 1L),
@@ -35,13 +36,17 @@ makeRLearner.surv.ranger = function() {
 }
 
 #' @export
-trainLearner.surv.ranger = function(.learner, .task, .subset, .weights, mtry, ...) {
+trainLearner.surv.ranger = function(.learner, .task, .subset, .weights, mtry, mtry.perc, ...) {
   tn = getTaskTargetNames(.task)
   if (missing(mtry)) {
-    mtry = floor(sqrt(getTaskNFeats(.task)))
+    if (missing(mtry.perc)) {
+      mtry = floor(sqrt(getTaskNFeats(.task)))
+    } else {
+      mtry = mtry.perc * getTaskNFeats(.task)
+    }
   }
   ranger::ranger(formula = NULL, dependent.variable.name = tn[1L],
-                 status.variable.name = tn[2L], data = getTaskData(.task, .subset), mtry = mtry, ...)
+    status.variable.name = tn[2L], data = getTaskData(.task, .subset), mtry = mtry, ...)
 }
 
 #' @export

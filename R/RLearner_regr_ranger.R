@@ -7,6 +7,7 @@ makeRLearner.regr.ranger = function() {
     par.set = makeParamSet(
       makeIntegerLearnerParam(id = "num.trees", lower = 1L, default = 500L),
       makeIntegerLearnerParam(id = "mtry", lower = 1L),
+      makeNumericLearnerParam(id = "mtry.perc", lower = 0, upper = 1),
       makeIntegerLearnerParam(id = "min.node.size", lower = 1L, default = 5L),
       makeLogicalLearnerParam(id = "replace", default = TRUE),
       makeNumericLearnerParam(id = "sample.fraction", lower = 0L, upper = 1L),
@@ -35,14 +36,18 @@ makeRLearner.regr.ranger = function() {
 }
 
 #' @export
-trainLearner.regr.ranger = function(.learner, .task, .subset, .weights, keep.inbag = NULL, mtry, ...) {
+trainLearner.regr.ranger = function(.learner, .task, .subset, .weights, keep.inbag = NULL, mtry, mtry.perc, ...) {
   tn = getTaskTargetNames(.task)
   if (missing(mtry)) {
+    if (missing(mtry.perc)) {
       mtry = floor(sqrt(getTaskNFeats(.task)))
+    } else {
+      mtry = mtry.perc * getTaskNFeats(.task)
+    }
   }
   keep.inbag = if (is.null(keep.inbag)) FALSE else keep.inbag
   keep.inbag = if (.learner$predict.type == "se") TRUE else keep.inbag
-  ranger::ranger(formula = NULL, dependent.variable = tn, data = getTaskData(.task, .subset), keep.inbag = keep.inbag, mtry = mtry, ...)
+  ranger::ranger(formula = NULL, dependent.variable = tn, data = getTaskData(.task, .subset), keep.inbag = keep.inbag, mtry, ...)
 }
 
 #' @export

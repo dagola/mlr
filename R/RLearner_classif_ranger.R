@@ -7,6 +7,7 @@ makeRLearner.classif.ranger = function() {
     par.set = makeParamSet(
       makeIntegerLearnerParam(id = "num.trees", lower = 1L, default = 500L),
       makeIntegerLearnerParam(id = "mtry", lower = 1L),
+      makeNumericLearnerParam(id = "mtry.perc", lower = 0, upper = 1),
       makeIntegerLearnerParam(id = "min.node.size", lower = 1L),
       makeLogicalLearnerParam(id = "replace", default = TRUE),
       makeNumericLearnerParam(id = "sample.fraction", lower = 0L, upper = 1L),
@@ -32,10 +33,14 @@ makeRLearner.classif.ranger = function() {
 }
 
 #' @export
-trainLearner.classif.ranger = function(.learner, .task, .subset, .weights = NULL, mtry, min.node.size, ...) {
+trainLearner.classif.ranger = function(.learner, .task, .subset, .weights = NULL, mtry, mtry.perc, min.node.size, ...) {
   tn = getTaskTargetNames(.task)
   if (missing(mtry)) {
-    mtry = floor(sqrt(getTaskNFeats(.task)))
+    if (missing(mtry.perc)) {
+      mtry = floor(sqrt(getTaskNFeats(.task)))
+    } else {
+      mtry = mtry.perc * getTaskNFeats(.task)
+    }
   }
   if (missing(min.node.size)) {
     if (.learner$predict.type == "prob") {
@@ -68,4 +73,4 @@ getFeatureImportanceLearner.classif.ranger = function(.learner, .model, ...) {
   }
   mod = getLearnerModel(.model)
   ranger::importance(mod)
-}
+  }
