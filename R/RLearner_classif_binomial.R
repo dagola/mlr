@@ -6,7 +6,7 @@ makeRLearner.classif.binomial = function() {
     par.set = makeParamSet(
       makeDiscreteLearnerParam("link", values = c("logit", "probit", "cloglog", "cauchit", "log"),
         default = "logit"),
-      makeLogicalLearnerParam("sparse", default = TRUE, when = "train", tuneable = FALSE)
+      makeLogicalLearnerParam("sparse", default = TRUE, when = "train", tunable = FALSE)
     ),
     par.vals = list(
       sparse = TRUE
