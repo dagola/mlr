@@ -5,7 +5,8 @@ makeRLearner.classif.binomial = function() {
     package = "stats",
     par.set = makeParamSet(
       makeDiscreteLearnerParam("link", values = c("logit", "probit", "cloglog", "cauchit", "log"),
-        default = "logit")
+        default = "logit"),
+      makeLogicalLearnerParam("sparse", default = TRUE, when = "train")
     ),
     par.vals = list(
       model = FALSE
@@ -13,7 +14,7 @@ makeRLearner.classif.binomial = function() {
     properties = c("twoclass", "numerics", "factors", "prob", "weights"),
     name = "Binomial Regression",
     short.name = "binomial",
-    note = "Delegates to `glm` with freely choosable binomial link function via learner parameter `link`. We set 'model' to FALSE by default to save memory.",
+    note = "Delegates to `glm` with freely choosable binomial link function via learner parameter `link`. We set 'sparse' to TRUE by default to save memory. Thus the learner model consists of the coefficients only.",
     callees = c("glm", "binomial")
   )
 }
@@ -21,10 +22,15 @@ makeRLearner.classif.binomial = function() {
 #' @export
 trainLearner.classif.binomial = function(.learner, .task, .subset, .weights = NULL, link = "logit", ...) {
   data = getTaskData(.task, .subset, target.extra = TRUE)
-  stats::glm.fit(y = data$target,
+  fit = stats::glm.fit(y = data$target,
                  x = cbind(1, as.matrix(data$data)),
                  family = stats::binomial(link = link),
                  weights = .weights, ...)
+  if(sparse) {
+    return(fit["coefficients"])
+  } else {
+    return(fit)
+  }
 }
 
 #' @export
