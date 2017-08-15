@@ -6,10 +6,10 @@ makeRLearner.classif.binomial = function() {
     par.set = makeParamSet(
       makeDiscreteLearnerParam("link", values = c("logit", "probit", "cloglog", "cauchit", "log"),
         default = "logit"),
-      makeLogicalLearnerParam("sparse", default = TRUE, when = "train")
+      makeLogicalLearnerParam("sparse", default = TRUE, when = "train", tuneable = FALSE)
     ),
     par.vals = list(
-      model = FALSE
+      sparse = TRUE
     ),
     properties = c("twoclass", "numerics", "factors", "prob", "weights"),
     name = "Binomial Regression",
