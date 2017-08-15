@@ -21,18 +21,25 @@ makeRLearner.classif.binomial = function() {
 
 #' @export
 trainLearner.classif.binomial = function(.learner, .task, .subset, .weights = NULL, link = "logit", ...) {
-  f = getTaskFormula(.task)
-  stats::glm(f, data = getTaskData(.task, .subset), family = stats::binomial(link = link), weights = .weights, ...)
+  data = getTaskData(.task, .subset, target.extra = TRUE)
+  stats::glm.fit(y = data$target,
+                 x = cbind(1, as.matrix(data$data)),
+                 family = stats::binomial(link = link),
+                 weights = .weights, ...)
 }
 
 #' @export
 predictLearner.classif.binomial = function(.learner, .model, .newdata, ...) {
-  x = predict(.model$learner.model, newdata = .newdata, type = "response", ...)
+  newmatrix = cbind(1, as.matrix(.newdata))
+  coefs = as.matrix(.model$learner.model$coefficients)
+  eta = newmatrix %*% coefs
+
+  x = exp(eta)/(1+exp(eta))
   levs = .model$task.desc$class.levels
   if (.learner$predict.type == "prob") {
-    propVectorToMatrix(x, levs)
+    x = cbind(1-x, x)
+    colnames(x) = levs
   } else {
-    levs = .model$task.desc$class.levels
     p = as.factor(ifelse(x > 0.5, levs[2L], levs[1L]))
     unname(p)
   }

@@ -16,8 +16,8 @@ makeRLearner.classif.naiveBayes = function() {
 
 #' @export
 trainLearner.classif.naiveBayes = function(.learner, .task, .subset, .weights = NULL,  ...) {
-  f = getTaskFormula(.task)
-  e1071::naiveBayes(f, data = getTaskData(.task, .subset), ...)
+  data = getTaskData(.task, .subset, target.extra = TRUE)
+  e1071::naiveBayes(x = as.matrix(data$data), y = data$target, ...)
 }
 
 #' @export
