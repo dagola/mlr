@@ -18,7 +18,7 @@ makeRLearner.classif.riskScorer = function() {
 
 #' @export
 trainLearner.classif.riskScorer <- function(.learner, .task, .subset, .weights, ...) {
-  riskScorer(y.name = getTaskTargetNames(.task),
+  riskScoreR::riskScorer(y.name = getTaskTargetNames(.task),
              data = getTaskData(.task, .subset),
              feature.names = getTaskFeatureNames(.task), ...)
 }
