@@ -8,9 +8,6 @@ makeRLearner.classif.binomial = function() {
         default = "logit"),
       makeLogicalLearnerParam("sparse", default = TRUE, when = "train", tunable = FALSE)
     ),
-    par.vals = list(
-      sparse = TRUE
-    ),
     properties = c("twoclass", "numerics", "factors", "prob", "weights"),
     name = "Binomial Regression",
     short.name = "binomial",
@@ -20,7 +17,7 @@ makeRLearner.classif.binomial = function() {
 }
 
 #' @export
-trainLearner.classif.binomial = function(.learner, .task, .subset, .weights = NULL, link = "logit", ...) {
+trainLearner.classif.binomial = function(.learner, .task, .subset, .weights = NULL, link = "logit", sparse = TRUE, ...) {
   data = getTaskData(.task, .subset, target.extra = TRUE)
   fit = stats::glm.fit(y = data$target,
                  x = cbind(1, as.matrix(data$data)),
@@ -44,6 +41,7 @@ predictLearner.classif.binomial = function(.learner, .model, .newdata, ...) {
   if (.learner$predict.type == "prob") {
     x = cbind(1-x, x)
     colnames(x) = levs
+    return(x)
   } else {
     p = as.factor(ifelse(x > 0.5, levs[2L], levs[1L]))
     unname(p)
