@@ -5,8 +5,7 @@ makeRLearner.classif.binomial = function() {
     package = "stats",
     par.set = makeParamSet(
       makeDiscreteLearnerParam("link", values = c("logit", "probit", "cloglog", "cauchit", "log"),
-        default = "logit"),
-      makeLogicalLearnerParam("model", default = TRUE, tunable = FALSE)
+        default = "logit")
     ),
     par.vals = list(
       model = FALSE
