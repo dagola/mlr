@@ -25,7 +25,7 @@ trainLearner.classif.riskScorer <- function(.learner, .task, .subset, .weights, 
 
 #' @export
 predictLearner.classif.riskScorer <- function(.learner, .model, .newdata, ...) {
-  p <- predict(riskScorer = .model$learner.model, newdata = .newdata, type = .learner$predict.type)
+  p <- predict(risk.scorer = .model$learner.model, newdata = .newdata, type = .learner$predict.type)
   if(.learner$predict.type == "response") {
     return(p[[1]])
   } else {
