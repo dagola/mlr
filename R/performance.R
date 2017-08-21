@@ -5,13 +5,16 @@
 #' @template arg_pred
 #' @template arg_measures
 #' @param task [\code{\link{Task}}]\cr
-#'   Learning task, might be requested by performance measure, usually not needed except for clustering.
+#'   Learning task, might be requested by performance measure, usually not needed except for clustering or survival.
 #' @param model [\code{\link{WrappedModel}}]\cr
-#'   Model built on training data, might be requested by performance measure, usually not needed.
+#'   Model built on training data, might be requested by performance measure, usually not needed except for survival.
 #' @param feats [\code{data.frame}]\cr
 #'   Features of predicted data, usually not needed except for clustering.
 #'   If the prediction was generated from a \code{task}, you can also pass this instead and the features
 #'   are extracted from it.
+#' @param na.rm [\code{logical(1)}]\cr
+#'   Should `NA` values be removed? Default `FALSE`.
+#'   This applies to all selected measures.
 #' @return [named \code{numeric}]. Performance value(s), named by measure(s).
 #' @export
 #' @family performance
@@ -28,10 +31,10 @@
 #' # Compute multiple performance measures at once
 #' ms = list("mmce" = mmce, "acc" = acc, "timetrain" = timetrain)
 #' performance(pred, measures = ms, task, mod)
-performance = function(pred, measures, task = NULL, model = NULL, feats = NULL) {
+performance = function(pred, measures, task = NULL, model = NULL, feats = NULL, na.rm = FALSE) {
   if (!is.null(pred))
     assertClass(pred, classes = "Prediction")
-  measures = checkMeasures(measures, pred$task.desc)
+  measures = checkMeasures(measures, pred$task.desc, na.rm = na.rm)
   res = vnapply(measures, doPerformanceIteration, pred = pred, task = task, model = model, td = NULL, feats = feats)
   # FIXME: This is really what the names should be, but it breaks all kinds of other stuff
   #if (inherits(pred, "ResamplePrediction")) {

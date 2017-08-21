@@ -4,7 +4,8 @@
 \alias{performance}
 \title{Measure performance of prediction.}
 \usage{
-performance(pred, measures, task = NULL, model = NULL, feats = NULL)
+performance(pred, measures, task = NULL, model = NULL, feats = NULL,
+  na.rm = FALSE)
 }
 \arguments{
 \item{pred}{[\code{\link{Prediction}}]\cr
@@ -15,15 +16,19 @@ Performance measure(s) to evaluate.
 Default is the default measure for the task, see here \code{\link{getDefaultMeasure}}.}
 
 \item{task}{[\code{\link{Task}}]\cr
-Learning task, might be requested by performance measure, usually not needed except for clustering.}
+Learning task, might be requested by performance measure, usually not needed except for clustering or survival.}
 
 \item{model}{[\code{\link{WrappedModel}}]\cr
-Model built on training data, might be requested by performance measure, usually not needed.}
+Model built on training data, might be requested by performance measure, usually not needed except for survival.}
 
 \item{feats}{[\code{data.frame}]\cr
 Features of predicted data, usually not needed except for clustering.
 If the prediction was generated from a \code{task}, you can also pass this instead and the features
 are extracted from it.}
+
+\item{na.rm}{[\code{logical(1)}]\cr
+Should `NA` values be removed? Default `FALSE`.
+This applies to all selected measures.}
 }
 \value{
 [named \code{numeric}]. Performance value(s), named by measure(s).
@@ -52,5 +57,7 @@ Other performance: \code{\link{ConfusionMatrix}},
   \code{\link{estimateRelativeOverfitting}},
   \code{\link{makeCostMeasure}},
   \code{\link{makeCustomResampledMeasure}},
-  \code{\link{makeMeasure}}, \code{\link{measures}}
+  \code{\link{makeMeasure}}, \code{\link{measures}},
+  \code{\link{setAggregation}},
+  \code{\link{setMeasurePars}}
 }
