@@ -33,7 +33,7 @@ makeRLearner.classif.ranger = function() {
 }
 
 #' @export
-trainLearner.classif.ranger = function(.learner, .task, .subset, .weights = NULL, mtry, mtry.perc, ...) {
+trainLearner.classif.ranger = function(.learner, .task, .subset, .weights = NULL, mtry, mtry.perc, min.node.size, ...) {
   tn = getTaskTargetNames(.task)
   if (missing(mtry)) {
     if (missing(mtry.perc)) {
@@ -42,8 +42,15 @@ trainLearner.classif.ranger = function(.learner, .task, .subset, .weights = NULL
       mtry = max(1, floor(mtry.perc * getTaskNFeats(.task)))
     }
   }
+  if (missing(min.node.size)) {
+    if (.learner$predict.type == "prob") {
+      min.node.size = 10
+    } else {
+      min.node.size = 1
+    }
+  }
   ranger::ranger(formula = NULL, dependent.variable = tn, data = getTaskData(.task, .subset),
-                 probability = (.learner$predict.type == "prob"), case.weights = .weights, mtry = mtry, ...)
+                 probability = (.learner$predict.type == "prob"), case.weights = .weights, mtry = mtry, min.node.size = min.node.size, ...)
 }
 
 #' @export
