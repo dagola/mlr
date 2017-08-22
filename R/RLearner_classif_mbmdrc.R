@@ -26,7 +26,7 @@ makeRLearner.classif.mbmdrc = function() {
 
 #' @export
 trainLearner.classif.mbmdrc = function(.learner, .task, .subset, .weights = NULL, cv.top.results, order, order.range, ...) {
-  if (order_range) {
+  if (order.range) {
     order = 1L:order
   }
   mbmdrc(dependent.variable.name = mlr::getTaskTargetNames(.task),
