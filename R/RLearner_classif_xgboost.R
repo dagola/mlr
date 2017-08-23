@@ -58,7 +58,7 @@ makeRLearner.classif.xgboost = function() {
 }
 
 #' @export
-trainLearner.classif.xgboost = function(.learner, .task, .subset, .weights = NULL, save_period = 0, save_name,  ...) {
+trainLearner.classif.xgboost = function(.learner, .task, .subset, .weights = NULL, ...) {
 
   td = getTaskDesc(.task)
   parlist = list(...)
@@ -83,13 +83,6 @@ trainLearner.classif.xgboost = function(.learner, .task, .subset, .weights = NUL
 
   if (is.null(parlist$watchlist))
     parlist$watchlist = list(train = parlist$data)
-
-  if (missing(save_name))
-    parlist$save_name = sprintf("%s.xgbmodel", tempfile())
-  else
-    parlist$save_name = save_name
-
-  parlist$save_period = save_period
 
   do.call(xgboost::xgboost, parlist)
 }
