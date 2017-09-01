@@ -65,13 +65,13 @@ trainLearner.classif.xgboost = function(.learner, .task, .subset, .weights = NUL
   nc = length(td$class.levels)
 
   if (is.null(parlist$objective))
-    parlist$params = ifelse(nc == 2L, list(objective = "binary:logistic"), list(objective = "multi:softprob"))
+    parlist$objective = ifelse(nc == 2L, "binary:logistic", "multi:softprob")
 
-  if (.learner$predict.type == "prob" && parlist$params$objective == "multi:softmax")
+  if (.learner$predict.type == "prob" && parlist$objective == "multi:softmax")
     stop("objective = 'multi:softmax' does not work with predict.type = 'prob'")
 
   #if we use softprob or softmax as objective we have to add the number of classes 'num_class'
-  if (parlist$params$objective %in% c("multi:softprob", "multi:softmax"))
+  if (parlist$objective %in% c("multi:softprob", "multi:softmax"))
     parlist$num_class = nc
 
   task.data = getTaskData(.task, .subset, target.extra = TRUE)
@@ -80,9 +80,6 @@ trainLearner.classif.xgboost = function(.learner, .task, .subset, .weights = NUL
 
   if (!is.null(.weights))
     xgboost::setinfo(parlist$data, "weight", .weights)
-
-  if (is.null(parlist$watchlist))
-    parlist$watchlist = list(train = parlist$data)
 
   do.call(xgboost::xgboost, parlist)
 }
