@@ -17,7 +17,7 @@ makeRLearner.classif.mbmdrc = function() {
       ParamHelpers::makeDiscreteLearnerParam(id = "cv.loss", values = c("auc", "bac"), default = "auc", when = "train", tunable = FALSE),
       ParamHelpers::makeLogicalLearnerParam(id = "o.as.na", default = FALSE, when = "both", tunable = TRUE)
     ),
-    properties = c("twoclass", "prob", "numerics", "factors"),
+    properties = c("twoclass", "prob", "numerics", "factors", "ordered"),
     name = "MB-MDR based classification",
     short.name = "mbmdrc",
     note = "Learner param 'predict.method' maps to 'type' in predict.mbmdrc."
@@ -26,7 +26,16 @@ makeRLearner.classif.mbmdrc = function() {
 
 #' @export
 trainLearner.classif.mbmdrc = function(.learner, .task, .subset, .weights = NULL, cv.top.results, order, order.range, ...) {
-  if (order_range) {
+  if (missing(order.range)) {
+    order.range = .learner$par.set$pars$order.range$default
+  }
+  if (missing(order)) {
+    order = .learner$par.set$pars$order$default
+  }
+  if (missing(cv.top.results)) {
+    cv.top.results = .learner$par.set$pars$cv.top.results$default
+  }
+  if (order.range) {
     order = 1L:order
   }
   mbmdrc(dependent.variable.name = mlr::getTaskTargetNames(.task),
