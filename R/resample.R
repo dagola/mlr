@@ -44,9 +44,6 @@
 #'   during resampling.
 #'   Default is to extract nothing.
 #' @template arg_keep_pred
-#' @param na.rm [\code{logical(1)}]\cr
-#'   Should `NA` values be removed during aggregation of results from `resample`? Default `FALSE`.
-#'   This applies to all selected measures.
 #' @param ... [any]\cr
 #'   Further hyperparameters passed to \code{learner}.
 #' @template arg_showinfo
@@ -70,7 +67,7 @@
 #'   measures = list(mmce, setAggregation(mmce, train.mean)))
 #' print(r$aggr)
 resample = function(learner, task, resampling, measures, weights = NULL, models = FALSE,
-  extract, keep.pred = TRUE, na.rm = FALSE, ..., show.info = getMlrOption("show.info")) {
+  extract, keep.pred = TRUE, ..., show.info = getMlrOption("show.info")) {
 
   learner = checkLearner(learner)
   learner = setHyperPars(learner, ...)
@@ -80,7 +77,7 @@ resample = function(learner, task, resampling, measures, weights = NULL, models 
   if (inherits(resampling, "ResampleDesc"))
     resampling = makeResampleInstance(resampling, task = task)
   assertClass(resampling, classes = "ResampleInstance")
-  measures = checkMeasures(measures, task, na.rm = na.rm)
+  measures = checkMeasures(measures, task)
   if (!is.null(weights)) {
     assertNumeric(weights, len = n, any.missing = FALSE, lower = 0)
   }
@@ -100,8 +97,7 @@ resample = function(learner, task, resampling, measures, weights = NULL, models 
 
   rin = resampling
   more.args = list(learner = learner, task = task, rin = rin, weights = NULL,
-    measures = measures, model = models, extract = extract, show.info = show.info,
-    na.rm = na.rm)
+    measures = measures, model = models, extract = extract, show.info = show.info)
   if (!is.null(weights)) {
     more.args$weights = weights
   } else if (!is.null(getTaskWeights(task))) {
@@ -139,18 +135,18 @@ resample = function(learner, task, resampling, measures, weights = NULL, models 
 
 
 # this wraps around calculateREsampleIterationResult and contains the subsetting for a specific fold i
-doResampleIteration = function(learner, task, rin, i, measures, weights, model, extract, show.info, na.rm) {
+doResampleIteration = function(learner, task, rin, i, measures, weights, model, extract, show.info) {
   setSlaveOptions()
   train.i = rin$train.inds[[i]]
   test.i = rin$test.inds[[i]]
   calculateResampleIterationResult(learner = learner, task = task, i = i, train.i = train.i, test.i = test.i, measures = measures,
-    weights = weights, rdesc = rin$desc, model = model, extract = extract, show.info = show.info, na.rm = na.rm)
+    weights = weights, rdesc = rin$desc, model = model, extract = extract, show.info = show.info)
 }
 
 
 #Evaluate one train/test split of the resample function and get one or more performance values
 calculateResampleIterationResult = function(learner, task, i, train.i, test.i, measures,
-  weights, rdesc, model, extract, show.info, na.rm) {
+  weights, rdesc, model, extract, show.info) {
 
   err.msgs = c(NA_character_, NA_character_)
   err.dumps = list()
@@ -182,7 +178,7 @@ calculateResampleIterationResult = function(learner, task, i, train.i, test.i, m
   } else if (pp == "test") {
     pred.test = predict(m, task, subset = test.i)
     if (!is.na(pred.test$error)) err.msgs[2L] = pred.test$error
-    ms.test = performance(task = task, model = m, pred = pred.test, measures = measures, na.rm = na.rm)
+    ms.test = performance(task = task, model = m, pred = pred.test, measures = measures)
     names(ms.test) = vcapply(measures, measureAggrName)
     err.dumps$predict.test = getPredictionDump(pred.test)
   } else { # "both"
