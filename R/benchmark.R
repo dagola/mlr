@@ -19,9 +19,6 @@
 #' @param measures [(list of) \code{\link{Measure}}]\cr
 #'   Performance measures for all tasks.
 #'   If missing, the default measure of the first task is used.
-#' @param na.rm [\code{logical(1)}]\cr
-#'   Should `NA` values be removed during aggregation of results from `resample`? Default `FALSE`.
-#'   This applies to all selected measures.
 #' @template arg_keep_pred
 #' @template arg_models
 #' @template arg_showinfo
@@ -41,7 +38,7 @@
 #' plotBMRRanksAsBarChart(bmr, pos = "stack")
 #' friedmanTestBMR(bmr)
 #' friedmanPostHocTestBMR(bmr, p.value = 0.05)
-benchmark = function(learners, tasks, resamplings, measures, keep.pred = TRUE, models = TRUE, show.info = getMlrOption("show.info"), na.rm = FALSE) {
+benchmark = function(learners, tasks, resamplings, measures, keep.pred = TRUE, models = TRUE, show.info = getMlrOption("show.info")) {
   learners = ensureBenchmarkLearners(learners)
   tasks = ensureBenchmarkTasks(tasks)
   resamplings = ensureBenchmarkResamplings(resamplings, tasks)
@@ -58,7 +55,7 @@ benchmark = function(learners, tasks, resamplings, measures, keep.pred = TRUE, m
     task = grid$task,
     learner = grid$learner,
     more.args = list(learners = learners, tasks = tasks, resamplings = resamplings,
-      measures = measures, keep.pred = keep.pred, models = models, show.info = show.info, na.rm = na.rm),
+      measures = measures, keep.pred = keep.pred, models = models, show.info = show.info),
     level = plevel
   )
   results.by.task = split(results, unlist(grid$task))
@@ -103,14 +100,14 @@ benchmark = function(learners, tasks, resamplings, measures, keep.pred = TRUE, m
 NULL
 
 
-benchmarkParallel = function(task, learner, learners, tasks, resamplings, measures, keep.pred = TRUE, models = TRUE, show.info, na.rm = FALSE) {
+benchmarkParallel = function(task, learner, learners, tasks, resamplings, measures, keep.pred = TRUE, models = TRUE, show.info) {
   setSlaveOptions()
   if (show.info)
     messagef("Task: %s, Learner: %s", task, learner)
   lrn = learners[[learner]]
   extract.this = getExtractor(lrn)
   r = resample(lrn, tasks[[task]], resamplings[[task]],
-    measures = measures, models = models, extract = extract.this, keep.pred = keep.pred, show.info = show.info, na.rm = na.rm)
+    measures = measures, models = models, extract = extract.this, keep.pred = keep.pred, show.info = show.info)
   # store used learner in result
   r$learner = lrn
   return(r)
