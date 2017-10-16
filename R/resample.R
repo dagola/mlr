@@ -256,7 +256,12 @@ mergeResampleResult = function(learner.id, task, iter.results, measures, rin, mo
   # aggr = vnapply(measures, function(m) m$aggr$fun(task, ms.test[, m$id], ms.train[, m$id], m, rin$group, pred))
   aggr = vnapply(seq_along(measures), function(i) {
     m = measures[[i]]
-    m$aggr$fun(task, ms.test[, i], ms.train[, i], m, rin$group, pred)
+    if ("na.rm" %in% names(formals(m$aggr$fun))) {
+      m$aggr$fun(task, ms.test[, i], ms.train[, i], m, rin$group,
+                 pred, na.rm = FALSE)
+    } else {
+      m$aggr$fun(task, ms.test[, i], ms.train[, i], m, rin$group, pred)
+    }
   })
   names(aggr) = vcapply(measures, measureAggrName)
 
