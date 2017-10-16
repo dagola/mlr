@@ -257,8 +257,13 @@ mergeResampleResult = function(learner.id, task, iter.results, measures, rin, mo
   aggr = vnapply(seq_along(measures), function(i) {
     m = measures[[i]]
     if ("na.rm" %in% names(formals(m$aggr$fun))) {
+      warning("Argument 'na.rm' is set in aggregation function. This resampling probably has been created with a malfunctioning version of mlr.")
+      if (missing(na.rm)) {
+        warning("Argument 'na.rm' is missing. Setting 'na.rm = FALSE'. You can specify a value by assigning 'na.rm = TRUE' or 'na.rm = FALSE' prior calling this function")
+        na.rm = FALSE
+      }
       m$aggr$fun(task, ms.test[, i], ms.train[, i], m, rin$group,
-                 pred, na.rm = FALSE)
+                 pred, na.rm = na.rm)
     } else {
       m$aggr$fun(task, ms.test[, i], ms.train[, i], m, rin$group, pred)
     }
