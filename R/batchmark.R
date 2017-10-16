@@ -111,13 +111,14 @@ reduceBatchmarkResults = function(ids = NULL, keep.pred = TRUE, show.info = getM
   tab = batchtools::getJobPars(ids, flatten = FALSE, reg = reg)[, c("job.id", "problem", "algorithm")]
   setkeyv(tab, cols = c("problem", "algorithm"), physical = FALSE)
   result = namedList(tab[, unique(problem)])
+  learner = namedList(tab[, unique(algorithm)])
 
   for (prob in names(result)) {
     algos = unique(tab[problem == prob], by = "algorithm")
-    data = batchtools::makeJob(id = algos$job.id[1L], reg = reg)$problem$data
     result[[prob]] = namedList(algos$algorithm)
 
     for (algo in names(result[[prob]])) {
+      data = batchtools::makeJob(id = algos[algorithm == algo, .SD[1, "job.id"]], reg = reg)$problem$data
       res = batchtools::reduceResultsList(tab[problem == prob & algorithm == algo], reg = reg)
       models = !is.null(res[[1L]]$model)
       lrn = data$learner[[algo]]
@@ -126,11 +127,12 @@ reduceBatchmarkResults = function(ids = NULL, keep.pred = TRUE, show.info = getM
         rin = data$rin, keep.pred = keep.pred, models = models, show.info = show.info, runtime = NA, extract = extract.this)
       rs$learner = lrn
       result[[prob]][[algo]] = addClasses(rs, "ResampleResult")
+      learner[[algo]] = lrn
     }
   }
 
   makeS3Obj(classes = "BenchmarkResult",
     results = result,
     measures = data$measures,
-    learners = data$learner[as.character(tab[, unique(algorithm)])])
+    learners = learner)
 }
