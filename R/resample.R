@@ -258,7 +258,7 @@ mergeResampleResult = function(learner.id, task, iter.results, measures, rin, mo
     m = measures[[i]]
     if ("na.rm" %in% names(formals(m$aggr$fun))) {
       warning("Argument 'na.rm' is set in aggregation function. This resampling probably has been created with a malfunctioning version of mlr.")
-      if (missing(na.rm)) {
+      if (!exists("na.rm")) {
         warning("Argument 'na.rm' is missing. Setting 'na.rm = FALSE'. You can specify a value by assigning 'na.rm = TRUE' or 'na.rm = FALSE' prior calling this function")
         na.rm = FALSE
       }
