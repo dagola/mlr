@@ -17,7 +17,7 @@ makeRLearner.classif.mbmdrc = function() {
       ParamHelpers::makeDiscreteLearnerParam(id = "cv.loss", values = c("auc", "bac"), default = "auc", when = "train", tunable = FALSE),
       ParamHelpers::makeLogicalLearnerParam(id = "o.as.na", default = FALSE, when = "both", tunable = TRUE)
     ),
-    properties = c("twoclass", "prob", "numerics", "factors", "ordered"),
+    properties = c("missings", "twoclass", "prob", "numerics", "factors", "ordered"),
     name = "MB-MDR based classification",
     short.name = "mbmdrc",
     note = "Learner param 'predict.method' maps to 'type' in predict.mbmdrc."
