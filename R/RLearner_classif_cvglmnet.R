@@ -32,7 +32,7 @@ makeRLearner.classif.cvglmnet = function() {
       makeNumericLearnerParam(id = "prec", default = 1e-10),
       makeIntegerLearnerParam(id = "mxit", default = 100L, lower = 1L)
     ),
-    properties = c("numerics", "factors", "prob", "twoclass", "multiclass", "weights"),
+    properties = c("numerics", "factors", "ordered", "prob", "twoclass", "multiclass", "weights"),
     name = "GLM with Lasso or Elasticnet Regularization (Cross Validated Lambda)",
     short.name = "cvglmnet",
     note = "The family parameter is set to `binomial` for two-class problems and to `multinomial` otherwise. Factors automatically get converted to dummy columns, ordered factors to integer.
